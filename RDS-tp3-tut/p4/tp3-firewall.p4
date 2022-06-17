@@ -205,24 +205,24 @@ control MyIngress(inout headers hdr,
 
     /////////////////////// 	
     
-    action just_fwd(ip4Addr_t nxt_hop) {
+    /*action just_fwd(ip4Addr_t nxt_hop) {
     	meta.next_hop_ipv4 = nxt_hop;
     	hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
-    }
+    }*/
 
     table portIn {
-	    key = { hdr.tcp.dstPort : exact; }
+	    key = { standard_metadata.egress_port : exact; }
 	    actions = {
-            just_fwd;
-		    drop;
+            	ipv4_fwd;
+		drop;
 	    }
         default_action = drop;
     }
 
     table portOut {
-        key = {hdr.tcp.srcPort : exact;}
+        key = { standard_metadata.ingress_port : exact;}
         actions = {
-            just_fwd;
+            ipv4_fwd;
             drop;
         }
         default_action = drop;
