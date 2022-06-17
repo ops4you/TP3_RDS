@@ -118,8 +118,8 @@ parser MyParser(packet_in packet,
     }
     
     state parse_ipv4 {
-    	packet.extract(hdr.ipv4:t); //extract function populates the ipv4 header
-    	transition select(hdr.ipv4_t.protocol) {
+    	packet.extract(hdr.ipv4); //extract function populates the ipv4 header
+    	transition select(hdr.ipv4.protocol) {
     	TYPE_TCP: parse_tcp;
         default: accept;
     	}
@@ -221,7 +221,7 @@ control MyIngress(inout headers hdr,
     table portIn {
 	    key = { standard_metadata.ingress_port : exact; }
 	    actions = {
-        NoAction;
+        	ipv4_fwd;
 		drop;
 	    }
         default_action = drop;
@@ -230,7 +230,7 @@ control MyIngress(inout headers hdr,
     table portOut {
         key = { standard_metadata.egress_port : exact;}
         actions = {
-            NoAction;
+            ipv4_fwd;
             drop;
         }
         default_action = drop;
