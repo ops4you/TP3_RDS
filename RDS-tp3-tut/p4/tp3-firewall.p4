@@ -118,10 +118,18 @@ parser MyParser(packet_in packet,
     }
     
     state parse_ipv4 {
-    	packet.extract(hdr.ipv4); //extract function populates the ipv4 header
-        transition accept;
+    	packet.extract(hdr.ipv4:t); //extract function populates the ipv4 header
+    	transition select(hdr.ipv4_t.protocol) {
+    	TYPE_TCP: parse_tcp;
+        default: accept;
+    	}
     }
-       
+    
+    state parse_tcp {
+    	packet.extract(hdr.tcp);
+    	transition accept;
+    }
+      
     // ACCEPT STATE (SUCCESS)
     
     // REJECT STATE (FAILURE)
