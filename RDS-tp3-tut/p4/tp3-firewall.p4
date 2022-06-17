@@ -21,6 +21,8 @@ const bit<8> TYPE_UDP  = 0x11;
 /* simple typedef to ease your task */
 
 typedef bit<9>  egressSpec_t;
+typedef bit<9>  portin_t;
+typedef bit<9>  portout_t;
 typedef bit<48> macAddr_t;
 typedef bit<32> ip4Addr_t;
 
@@ -53,8 +55,6 @@ header ipv4_t {
     ip4Addr_t dstAddr;
 }
 
-/* REMOVED AFTER UPDATE
-
 header tcp_t {
     bit<16> srcPort;
     bit<16> dstPort;
@@ -68,8 +68,6 @@ header tcp_t {
     bit<16> checksum;
     bit<16> urgentPtr;
 }
-*/
-
 
 /**
 * You can use this structure to pass 
@@ -79,12 +77,14 @@ header tcp_t {
 */
 struct metadata {
     ip4Addr_t   next_hop_ipv4;
+    portin_t    entrada;
+    portout_t   saida;
 }
 /* all the headers previously defined */
 struct headers {
     ethernet_t   ethernet;
     ipv4_t       ipv4;
-    //tcp_t        tcp; // REMOVED AFTER UPDATE
+    tcp_t        tcp; // REMOVED AFTER UPDATE
 }
 
 /*************************************************************************
@@ -205,16 +205,26 @@ control MyIngress(inout headers hdr,
 
     /////////////////////// 	
     
-    action rewrite_dst_mac (macAddr_t dst_mac) {
-	    hdr.ethernet.dstAddr = dst_mac;
+    action just_fwd(ip4Addr_t nxt_hop) {
+    	meta.next_hop_ipv4 = nxt_hop;
+    	hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
     }
 
     table port_in {
-	    key = { meta.next_hop_ipv4 : exact; }
+	    key = { hdr.tcp.dstPort : exact; }
 	    actions = {
-		    rewrite_dst_mac;
+            ipv4_fwd;
 		    drop;
 	    }
+        default_action = drop;
+    }
+
+    table port_out {
+        key = {hdr.tcp.srcPort : exact;}
+        actions = {
+            ipv4_fwd;
+            drop;
+        }
         default_action = drop;
     }
         	
@@ -226,6 +236,8 @@ control MyIngress(inout headers hdr,
         	ipv4_lpm.apply();
         	src_mac.apply();
         	dst_mac.apply();
+            port_in.apply();
+            port_out.apply();
     	}
     }
 }
@@ -272,6 +284,7 @@ control MyDeparser(packet_out packet, in headers hdr) {
     apply {
 	packet.emit(hdr.ethernet);
 	packet.emit(hdr.ipv4);
+    packet.emit(hdr.tcp);
     }
 }
 
@@ -304,3 +317,4 @@ MyEgress(),
 MyComputeChecksum(),
 MyDeparser()
 ) main;
+
