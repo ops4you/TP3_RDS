@@ -880,8 +880,8 @@
           "key" : [
             {
               "match_type" : "exact",
-              "name" : "standard_metadata.egress_port",
-              "target" : ["standard_metadata", "egress_port"],
+              "name" : "standard_metadata.ingress_port",
+              "target" : ["standard_metadata", "ingress_port"],
               "mask" : null
             }
           ],
@@ -917,8 +917,8 @@
           "key" : [
             {
               "match_type" : "exact",
-              "name" : "standard_metadata.ingress_port",
-              "target" : ["standard_metadata", "ingress_port"],
+              "name" : "standard_metadata.egress_port",
+              "target" : ["standard_metadata", "egress_port"],
               "mask" : null
             }
           ],
