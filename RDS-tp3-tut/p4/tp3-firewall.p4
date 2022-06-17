@@ -210,19 +210,19 @@ control MyIngress(inout headers hdr,
     	hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
     }
 
-    table port_in {
+    table portIn {
 	    key = { hdr.tcp.dstPort : exact; }
 	    actions = {
-            ipv4_fwd;
+            just_fwd;
 		    drop;
 	    }
         default_action = drop;
     }
 
-    table port_out {
+    table portOut {
         key = {hdr.tcp.srcPort : exact;}
         actions = {
-            ipv4_fwd;
+            just_fwd;
             drop;
         }
         default_action = drop;
@@ -236,8 +236,8 @@ control MyIngress(inout headers hdr,
         	ipv4_lpm.apply();
         	src_mac.apply();
         	dst_mac.apply();
-            port_in.apply();
-            port_out.apply();
+            	portIn.apply();
+            	portOut.apply();
     	}
     }
 }
@@ -317,4 +317,3 @@ MyEgress(),
 MyComputeChecksum(),
 MyDeparser()
 ) main;
-

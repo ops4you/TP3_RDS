@@ -8,5 +8,5 @@ table_add src_mac rewrite_src_mac 1 => 00:aa:bb:00:00:01
 table_add src_mac rewrite_src_mac 2 => 00:aa:bb:00:00:02
 table_add dst_mac rewrite_dst_mac 10.0.1.1 => 00:04:00:00:00:01
 table_add dst_mac rewrite_dst_mac 10.0.2.1 => 00:04:00:00:00:02
-table_add port_in ipv4_fwd 5555 => 10.0.1.1 5555
-table_add port_out ipv4_fwd 5555 => 10.0.2.1 5555
+table_add portIn just_fwd 5555 => 10.0.1.1
+table_add portOut just_fwd 5555 => 10.0.2.1
