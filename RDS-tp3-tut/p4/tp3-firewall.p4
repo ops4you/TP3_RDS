@@ -202,6 +202,22 @@ control MyIngress(inout headers hdr,
 	}
     default_action = drop;
     }
+
+    /////////////////////// 	
+    
+    action rewrite_dst_mac (macAddr_t dst_mac) {
+	    hdr.ethernet.dstAddr = dst_mac;
+    }
+
+    table port_in {
+	    key = { meta.next_hop_ipv4 : exact; }
+	    actions = {
+		    rewrite_dst_mac;
+		    drop;
+	    }
+        default_action = drop;
+    }
+        	
         	
     /////////////////////// 	
         	
