@@ -213,7 +213,7 @@ control MyIngress(inout headers hdr,
     table portIn {
 	    key = { standard_metadata.ingress_port : exact; }
 	    actions = {
-            	ipv4_fwd;
+        NoAction;
 		drop;
 	    }
         default_action = drop;
@@ -222,7 +222,7 @@ control MyIngress(inout headers hdr,
     table portOut {
         key = { standard_metadata.egress_port : exact;}
         actions = {
-            ipv4_fwd;
+            NoAction;
             drop;
         }
         default_action = drop;
