@@ -219,7 +219,7 @@ control MyIngress(inout headers hdr,
     }*/
 
     table newCheck {
-	key = { hdr.tcp.srcPort : range; hdr.tcp.dstPort: range; hdr.ipv4.srcAddr: exact; hdr.ipv4.dstAddr: exact; }
+	key = { hdr.tcp.srcPort : range; hdr.tcp.dstPort: range; ipv4.srcAddr: lpm; ipv4.dstAddr: lpm; }
 	actions = {
 		NoAction;
 		drop;
@@ -235,7 +235,6 @@ control MyIngress(inout headers hdr,
         	ipv4_lpm.apply();
         	src_mac.apply();
         	dst_mac.apply();
-        	newCheck.apply();
     	}
     }
 }

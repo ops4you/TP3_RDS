@@ -21,8 +21,6 @@ const bit<8> TYPE_UDP  = 0x11;
 /* simple typedef to ease your task */
 
 typedef bit<9>  egressSpec_t;
-typedef bit<9>  portin_t;
-typedef bit<9>  portout_t;
 typedef bit<48> macAddr_t;
 typedef bit<32> ip4Addr_t;
 
@@ -69,6 +67,7 @@ header tcp_t {
     bit<16> urgentPtr;
 }
 
+
 /**
 * You can use this structure to pass 
 * information between blocks/pipelines.
@@ -77,21 +76,18 @@ header tcp_t {
 */
 struct metadata {
     ip4Addr_t   next_hop_ipv4;
-    portin_t    entrada;
-    portout_t   saida;
 }
 /* all the headers previously defined */
 struct headers {
     ethernet_t   ethernet;
     ipv4_t       ipv4;
-    tcp_t        tcp; // REMOVED AFTER UPDATE
+    tcp_t        tcp;
 }
 
 /*************************************************************************
 *********************** P A R S E R  ***********************************
 *************************************************************************/
 
-// PACKET_IN É INPUT
 parser MyParser(packet_in packet,
                 out headers hdr,
                 inout metadata meta,
@@ -102,38 +98,19 @@ parser MyParser(packet_in packet,
      * transition <next-state>
      * transition select(<expression>) -> works like a switch case
      */
-     
-    // START STATE 
     state start {
         transition parse_ethernet;
     }
 
-    
+    /*
     state parse_ethernet {
-        packet.extract(hdr.ethernet); //extract function populates the ethernet header
+        packet.extract(hdr.ethernet);
         transition select(hdr.ethernet.etherType) {
-            TYPE_IPV4: parse_ipv4;
+            TYPE_IPV4:  <the name of the ipv4 parser>
             default: accept;
         }
     }
-    
-    state parse_ipv4 {
-    	packet.extract(hdr.ipv4); //extract function populates the ipv4 header
-    	transition select(hdr.ipv4.protocol) {
-            TYPE_TCP: parse_tcp;
-            default: accept;
-    	}
-    }
-    
-    state parse_tcp {
-    	packet.extract(hdr.tcp);
-    	transition accept;
-    }
-      
-    // ACCEPT STATE (SUCCESS)
-    
-    // REJECT STATE (FAILURE)
-    
+    */
 
 }
 
@@ -161,84 +138,17 @@ control MyIngress(inout headers hdr,
     * this is your main pipeline
     * where we define the actions and tables
     */
-    
-    ///////////////////////
-    
-    action ipv4_fwd(ip4Addr_t nxt_hop, egressSpec_t port) {
-    	meta.next_hop_ipv4 = nxt_hop;
-    	standard_metadata.egress_spec = port;
-    	hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
-    }
-    
-    table ipv4_lpm {
-    	key = { hdr.ipv4.dstAddr : lpm; }
-    	actions = {
-    		ipv4_fwd;
-    		drop;
-    		NoAction;
-    	}
-    	default_action = NoAction(); // NoAction is defined in v1model - does nothing
-    }	
-    
-    
-    ///////////////////////
-    
-    action rewrite_src_mac (macAddr_t src_mac) {
-	hdr.ethernet.srcAddr = src_mac;
-    }
-	
-    table src_mac {
-	key = { standard_metadata.egress_spec : exact; }
-	actions = {
-		rewrite_src_mac;
-		drop;
-	}
-	default_action = drop;
-    }
-    
-    ///////////////////////
-    
-    action rewrite_dst_mac (macAddr_t dst_mac) {
-	hdr.ethernet.dstAddr = dst_mac;
-    }
 
-    table dst_mac {
-	key = { meta.next_hop_ipv4 : exact; }
-	actions = {
-		rewrite_dst_mac;
-		drop;
-	}
-    default_action = drop;
-    }
-
-    /////////////////////// 	
     
-    /*action just_fwd(ip4Addr_t nxt_hop) {
-    	meta.next_hop_ipv4 = nxt_hop;
-    	hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
-    }*/
-
-    table newCheck {
-	key = { hdr.tcp.srcPort : range; hdr.tcp.dstPort: range; hdr.ipv4.srcAddr: exact; hdr.ipv4.dstAddr: exact; }
-	actions = {
-		NoAction;
-		drop;
-	}
-    default_action = drop;
-    }
-        	
-        	
-    /////////////////////// 	
-        	
+    
     apply {
-        if (hdr.ipv4.isValid()) {
-        	ipv4_lpm.apply();
-        	src_mac.apply();
-        	dst_mac.apply();
-        	newCheck.apply();
-    	}
+        /**
+        * The conditions and order in which the software 
+        * switch must apply the tables. 
+        */
     }
 }
+
 /*************************************************************************
 ****************  E G R E S S   P R O C E S S I N G   *******************
 *************************************************************************/
@@ -280,9 +190,10 @@ control MyComputeChecksum(inout headers  hdr, inout metadata meta) {
 
 control MyDeparser(packet_out packet, in headers hdr) {
     apply {
-	packet.emit(hdr.ethernet);
-	packet.emit(hdr.ipv4);
-    packet.emit(hdr.tcp);
+        /**
+        * add the extracted headers to the packet 
+        * packet.emit(hdr.ethernet);
+        */
     }
 }
 
