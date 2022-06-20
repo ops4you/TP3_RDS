@@ -3,8 +3,8 @@ table_set_default ipv4_lpm drop
 table_set_default src_mac drop
 table_set_default dst_mac drop
 table_set_default newCheck drop
-table_add newCheck NoAction 5554->5556 0->6635 10.0.1.1 1 10.0.2.1 2
-table_add newCheck NoAction 0->6635 5554->5556 10.0.2.1 1 10.0.1.1 2 
+table_add newCheck NoAction 0->65535 5555->5555 10.0.1.1 10.0.2.1 => 1
+table_add newCheck NoAction 5555->5555 0->65535 10.0.2.1 10.0.1.1 => 2
 table_add ipv4_lpm ipv4_fwd 10.0.1.1/32 => 10.0.1.1 1
 table_add ipv4_lpm ipv4_fwd 10.0.2.1/32 => 10.0.2.1 2
 table_add src_mac rewrite_src_mac 1 => 00:aa:bb:00:00:01
