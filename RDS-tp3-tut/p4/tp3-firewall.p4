@@ -232,10 +232,10 @@ control MyIngress(inout headers hdr,
         	
     apply {
         if (hdr.ipv4.isValid()) {
+        	newCheck.apply();
         	ipv4_lpm.apply();
         	src_mac.apply();
         	dst_mac.apply();
-        	newCheck.apply();
     	}
     }
 }
@@ -314,4 +314,4 @@ MyIngress(),
 MyEgress(),
 MyComputeChecksum(),
 MyDeparser()
-) main;
+) main;`
